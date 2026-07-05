@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Raw data is downloaded from Kaggle, not redistributed here (see data-sources.md).
+# Per-headline files contain the dataset's text and are likewise not committed.
+data/raw/
+data/processed/headline_sentiment.csv
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
