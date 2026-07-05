@@ -1,0 +1,140 @@
+# Does financial news sentiment predict next-day S&P 500 movement?
+
+**Short answer: barely, and not exploitably — and this project is about
+demonstrating how to reach that conclusion honestly.**
+
+A research analysis of 18,153 real financial news headlines (2008–2024)
+scored with a finance-tuned language model and tested against real S&P 500
+closing prices, with the leakage auditing, baseline discipline, and
+statistical care that separates a defensible answer from a data-mined one.
+
+*This is a research exercise in event-driven sentiment analysis — a genuine,
+well-studied question in empirical finance. It is **not** a trading system,
+a price predictor, or investment advice, and no result here should be read
+as one.*
+
+---
+
+## Key findings (reported as computed, including the null results)
+
+1. **The sentiment scorer works.** Mean FinBERT headline sentiment drops to
+   **−0.34** during the 2008 financial crisis and **−0.20** during the 2020
+   COVID crash, against a full-sample mean of −0.06. The monthly sentiment
+   series tracks every major stress regime in the sample.
+
+2. **Same-day correlation is strong (r = 0.18, p < 0.0001) — and mostly
+   meaningless as prediction.** Many headlines are recaps written *after*
+   the close ("Stocks Plunge As…"). This number validates the scorer and
+   illustrates reverse causality; treating it as skill is the first trap
+   this project is built to avoid.
+
+3. **The honest, predictive relationship is an order of magnitude weaker:
+   next-day r = 0.031, Newey–West p = 0.052.** Directionally consistent —
+   after the most-positive-sentiment days the next session is up **56.8%**
+   of the time vs **51.8%** after the most-negative (χ² p = 0.050) — but
+   borderline, and concentrated in high-volatility periods.
+
+4. **A leakage-audited model cannot exploit it.** Walk-forward logistic
+   regression reaches **53.5%** out-of-sample accuracy vs **53.9%** for
+   simply always predicting "up" (McNemar p = 0.45), with AUC ≈ 0.50.
+   The market's upward drift is the whole ballgame; sentiment adds nothing
+   a model can use at daily index level.
+
+5. **The naive backtest "wins" anyway ($3.60 vs $2.94 per $1, no costs) —
+   which is the best exhibit in the repo.** A skill-free classifier
+   produced a market-beating equity curve over 16 years by luckily sitting
+   out a few bad days. That is exactly how spurious trading systems get
+   sold, and why backtest curves are not evidence.
+
+![Sentiment vs price](reports/figures/01_sentiment_vs_price.png)
+
+## Why the methodology is the point
+
+Anyone can correlate sentiment with returns and find *something*. The value
+of this project is in the controls that make the answer trustworthy:
+
+- **Leakage auditing, enforced by tests.** Every feature at day *t* is built
+  only from headlines and prices dated ≤ *t*. `tests/test_leakage.py` proves
+  it mechanically: it corrupts all data after a cutoff date and asserts that
+  no feature before the cutoff changes by a single bit. Add a feature that
+  peeks forward and the suite fails.
+- **A real trading calendar.** Prices exist only on dates with headlines, so
+  "the next row" is sometimes several sessions away. An NYSE session calendar
+  (holidays, plus unscheduled closures like Hurricane Sandy 2012) restricts
+  "next-day" claims to genuine consecutive sessions — 91.5% of dates qualify,
+  and the rest are excluded rather than silently mislabeled.
+- **Domain-appropriate sentiment.** FinBERT (ProsusAI), fine-tuned on
+  financial text, rather than a generic lexicon that misreads "bull",
+  "short", or "beat expectations".
+- **The right baseline.** The S&P 500 rises on ~54% of days, so "always up"
+  — not 50% — is the bar. Baselines are evaluated on the identical
+  out-of-sample days as the model, compared with McNemar's paired test.
+- **Honest statistics.** Newey–West (HAC) errors on all return regressions;
+  walk-forward (expanding-window) validation with per-fold scaling; the
+  same-day/next-day distinction maintained everywhere.
+
+## Repository structure
+
+```
+├── data-sources.md          # dataset provenance, known issues, handling
+├── notebooks/               # executed, in reading order
+│   ├── 01_data_cleaning_and_alignment.ipynb
+│   ├── 02_sentiment_scoring.ipynb
+│   ├── 03_correlation_analysis.ipynb
+│   └── 04_modeling_and_backtest.ipynb
+├── src/
+│   ├── data.py              # download, dedupe, NYSE-calendar alignment
+│   ├── sentiment.py         # FinBERT scoring (cached, deterministic)
+│   ├── features.py          # leakage-safe daily features and labels
+│   ├── analysis.py          # correlations, HAC regressions, subgroups
+│   ├── model.py             # walk-forward models, baselines, McNemar
+│   └── plots.py             # all figures
+├── reports/
+│   ├── deck.md              # 8-slide findings deck
+│   └── figures/
+├── tests/                   # 29 tests, incl. the mechanical leakage audit
+├── docs/explain-it-to-me.md # zero-background walkthrough
+└── data/processed/daily_sentiment.csv   # date-level aggregates (committed)
+```
+
+## Reproducing the analysis
+
+```bash
+git clone <this-repo> && cd sp500-news-sentiment
+pip install -r requirements.txt
+pytest                                  # 29 tests, ~5s, no downloads needed
+jupyter lab notebooks/                  # run 01 → 04 in order
+```
+
+Notebook 01 downloads the raw dataset from Kaggle automatically (anonymous,
+no API key). Notebook 02 scores headlines with FinBERT — ~5 minutes on CPU,
+cached thereafter; the committed `data/processed/daily_sentiment.csv` lets
+notebooks 03–04 run without rescoring. Python 3.11+.
+
+## Limitations
+
+- **Timestamps are date-only.** Pre-close vs post-close publication cannot be
+  distinguished, so same-day results are association, not causation, and the
+  next-day design is the only clean predictive test available.
+- **Close-to-close only** — no intraday prices, opens, or volume.
+- **Index-level aggregation** — no stock-level cross-section, where text
+  signals are typically stronger and better studied.
+- **Uneven coverage**: 2008–2010 include only ~36–52% of trading days
+  (results are re-verified on the dense 2011+ subsample); headline volume
+  grows 30× across the sample as the source mix shifts.
+- **Multiple comparisons**: with several subsamples inspected, borderline
+  p ≈ 0.05 findings are suggestive, not established.
+- The relationship measured is historical (2008–2024) and index-specific.
+  None of it is investment advice.
+
+## Data & attribution
+
+Dataset: [S&P 500 with Financial News Headlines, 2008–2024](https://www.kaggle.com/datasets/dyutidasmahaptra/s-and-p-500-with-financial-news-headlines-20082024)
+by Dyuti Dasmahapatra (Kaggle) — real headlines, real closing prices
+(spot-verified against official S&P 500 closes). Raw data is downloaded at
+runtime, not redistributed; see [data-sources.md](data-sources.md).
+Sentiment model: [ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert).
+
+## License
+
+MIT — see [LICENSE](LICENSE). © 2026 Shalom Wu
