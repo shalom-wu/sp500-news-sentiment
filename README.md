@@ -1,22 +1,10 @@
-# Does financial news sentiment predict next-day S&P 500 movement?
+# Financial News Sentiment and Next-Day S&P 500 Movement
 
-**Short answer: barely, and not exploitably — and this project is about
-demonstrating how to reach that conclusion honestly.**
+This repository tests whether daily financial-news sentiment is associated with next-trading-day S&P 500 returns. Headlines are scored with FinBERT, aligned to market closes, and evaluated with leakage checks, walk-forward validation, and simple baselines.
 
-A research analysis of 18,153 real financial news headlines (2008–2024)
-scored with a finance-tuned language model and tested against real S&P 500
-closing prices, with the leakage auditing, baseline discipline, and
-statistical care that separates a defensible answer from a data-mined one.
+This is a research analysis, not a trading system or investment recommendation.
 
-*This is a research exercise in event-driven sentiment analysis — a genuine,
-well-studied question in empirical finance. It is **not** a trading system,
-a price predictor, or investment advice, and no result here should be read
-as one.*
-
----
-
-## Key findings (reported as computed, including the null results)
-
+## Key findings
 1. **The sentiment scorer works.** Mean FinBERT headline sentiment drops to
    **−0.34** during the 2008 financial crisis and **−0.20** during the 2020
    COVID crash, against a full-sample mean of −0.06. The monthly sentiment
@@ -28,7 +16,7 @@ as one.*
    illustrates reverse causality; treating it as skill is the first trap
    this project is built to avoid.
 
-3. **The honest, predictive relationship is an order of magnitude weaker:
+3. **The next-day relationship is much weaker:
    next-day r = 0.031, Newey–West p = 0.052.** Directionally consistent —
    after the most-positive-sentiment days the next session is up **56.8%**
    of the time vs **51.8%** after the most-negative (χ² p = 0.050) — but
@@ -48,7 +36,7 @@ as one.*
 
 ![Sentiment vs price](reports/figures/01_sentiment_vs_price.png)
 
-## Why the methodology is the point
+## Methodology controls
 
 Anyone can correlate sentiment with returns and find *something*. The value
 of this project is in the controls that make the answer trustworthy:
@@ -69,7 +57,7 @@ of this project is in the controls that make the answer trustworthy:
 - **The right baseline.** The S&P 500 rises on ~54% of days, so "always up"
   — not 50% — is the bar. Baselines are evaluated on the identical
   out-of-sample days as the model, compared with McNemar's paired test.
-- **Honest statistics.** Newey–West (HAC) errors on all return regressions;
+- **Return regressions.** Newey–West (HAC) errors on all return regressions;
   walk-forward (expanding-window) validation with per-fold scaling; the
   same-day/next-day distinction maintained everywhere.
 
@@ -128,41 +116,6 @@ included yet; I did not create a placeholder.
 
 The raw dataset is now included in `data/raw/`, so the Kaggle download is
 optional rather than required for review.
-
-## Portfolio Use
-
-**CV bullets**
-
-- Built a leakage-aware sentiment analysis of 18K+ financial headlines and
-  S&P 500 closes, separating same-day association from next-trading-day
-  prediction.
-- Used FinBERT to score financial text and showed that headline sentiment has
-  weak standalone next-day predictive value at index level.
-- SQL-focused: Added DuckDB checks and KPI views for daily grain, valid
-  next-trading-day pairs, correlation summaries, and sentiment-bucket returns.
-- Power BI-focused: Prepared dashboard-ready tables and a three-page dashboard
-  build spec for executive, diagnostic, and decision-support views.
-
-**LinkedIn description**
-
-> Financial News Sentiment & Stock Market Movement - I built this to test a
-> tempting but risky question: can financial headlines predict next-day S&P 500
-> movement? The answer is mostly no at the index level.
-
-**Interview explanation**
-
-> "The project is useful because it does not overclaim. Sentiment is
-> informative context, but the next-day relationship is weak. I used SQL as the
-> reproducible validation layer, Python for sentiment and modeling, and Power
-> BI to make the null result easy to explain."
-
-**Likely interview questions**
-
-1. *How did you avoid leakage?* I separated same-day association from next-day
-   prediction and only used valid next-trading-day pairs.
-2. *Why FinBERT?* Financial language behaves differently from generic sentiment.
-3. *What would you improve?* Add timestamps, stock-level headlines, and stricter
-   out-of-sample evaluation.
 
 ## Limitations
 
