@@ -22,3 +22,7 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# Internal prep docs
+explainer-guide/
+docs/explain-it-to-me.md

@@ -1,0 +1,4 @@
+sentiment_bucket,trading_days,avg_sentiment,avg_next_day_return_pct,next_day_up_rate_pct
+Low sentiment,1169,-0.367,-0.007,52.5
+Middle sentiment,1169,-0.0272,0.051,53.2
+High sentiment,1168,0.2174,0.092,57.2

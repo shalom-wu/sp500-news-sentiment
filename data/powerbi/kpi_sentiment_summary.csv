@@ -1,0 +1,2 @@
+trading_days,first_date,last_date,scored_headlines,avg_headlines_per_day,corr_sentiment_next_return,corr_sentiment_same_day_return,next_day_up_rate_pct
+3506,2008-01-02,2024-03-01,18122,5.17,0.0186,0.1793,54.3

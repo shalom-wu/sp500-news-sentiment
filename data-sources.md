@@ -13,11 +13,11 @@ Kaggle, published by Dyuti Dasmahapatra:
   S&P 500 closes (e.g. 2020-03-23 = 2237.40, 2008-09-29 = 1106.42,
   2013-12-31 = 1848.36, 2022-01-03 = 4796.56) match exactly.
 
-The raw CSV is **not** committed to this repository — it is downloaded from
-Kaggle at runtime by `src/data.py` (`kagglehub`, anonymous access, no API key
-needed). The committed file `data/processed/daily_sentiment.csv` contains only
-date-level aggregates derived here (mean sentiment, headline counts, returns),
-no headline text.
+The raw CSV is included at `data/raw/sp500_headlines_2008_2024.csv` so a
+reviewer can inspect the project without a Kaggle download. The processed
+files in `data/processed/` are derived from that raw file by the notebook and
+`src/` pipeline. The Kaggle metadata check on 2026-07-06 returned license
+`CC-BY-SA-4.0`.
 
 ## Known issues and how they are handled
 

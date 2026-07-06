@@ -93,7 +93,6 @@ of this project is in the controls that make the answer trustworthy:
 │   ├── deck.md              # 8-slide findings deck
 │   └── figures/
 ├── tests/                   # 29 tests, incl. the mechanical leakage audit
-├── docs/explain-it-to-me.md # zero-background walkthrough
 └── data/processed/daily_sentiment.csv   # date-level aggregates (committed)
 ```
 
@@ -110,6 +109,60 @@ Notebook 01 downloads the raw dataset from Kaggle automatically (anonymous,
 no API key). Notebook 02 scores headlines with FinBERT — ~5 minutes on CPU,
 cached thereafter; the committed `data/processed/daily_sentiment.csv` lets
 notebooks 03–04 run without rescoring. Python 3.11+.
+
+## SQL and Power BI layer
+
+The [sql/](sql) folder adds a DuckDB validation and KPI layer over the included
+headline sentiment outputs. It checks daily grain, duplicate date coverage,
+missing forward returns, next-trading-day validity, and sentiment score ranges.
+
+```bash
+python scripts/run_sql.py
+```
+
+Exports land in `data/powerbi/`: daily market sentiment fact data, year-level
+sentiment, sentiment-tercile forward returns, monthly news volume, and a
+one-row KPI summary. The [power-bi/](power-bi) folder contains dashboard specs,
+DAX, refresh steps, manual build instructions, and mockups. No `.pbix` is
+included yet; I did not create a placeholder.
+
+The raw dataset is now included in `data/raw/`, so the Kaggle download is
+optional rather than required for review.
+
+## Portfolio Use
+
+**CV bullets**
+
+- Built a leakage-aware sentiment analysis of 18K+ financial headlines and
+  S&P 500 closes, separating same-day association from next-trading-day
+  prediction.
+- Used FinBERT to score financial text and showed that headline sentiment has
+  weak standalone next-day predictive value at index level.
+- SQL-focused: Added DuckDB checks and KPI views for daily grain, valid
+  next-trading-day pairs, correlation summaries, and sentiment-bucket returns.
+- Power BI-focused: Prepared dashboard-ready tables and a three-page dashboard
+  build spec for executive, diagnostic, and decision-support views.
+
+**LinkedIn description**
+
+> Financial News Sentiment & Stock Market Movement - I built this to test a
+> tempting but risky question: can financial headlines predict next-day S&P 500
+> movement? The answer is mostly no at the index level.
+
+**Interview explanation**
+
+> "The project is useful because it does not overclaim. Sentiment is
+> informative context, but the next-day relationship is weak. I used SQL as the
+> reproducible validation layer, Python for sentiment and modeling, and Power
+> BI to make the null result easy to explain."
+
+**Likely interview questions**
+
+1. *How did you avoid leakage?* I separated same-day association from next-day
+   prediction and only used valid next-trading-day pairs.
+2. *Why FinBERT?* Financial language behaves differently from generic sentiment.
+3. *What would you improve?* Add timestamps, stock-level headlines, and stricter
+   out-of-sample evaluation.
 
 ## Limitations
 
@@ -131,8 +184,9 @@ notebooks 03–04 run without rescoring. Python 3.11+.
 
 Dataset: [S&P 500 with Financial News Headlines, 2008–2024](https://www.kaggle.com/datasets/dyutidasmahaptra/s-and-p-500-with-financial-news-headlines-20082024)
 by Dyuti Dasmahapatra (Kaggle) — real headlines, real closing prices
-(spot-verified against official S&P 500 closes). Raw data is downloaded at
-runtime, not redistributed; see [data-sources.md](data-sources.md).
+(spot-verified against official S&P 500 closes). Raw and processed data are
+included for review; see [data-sources.md](data-sources.md) and
+`data/data_manifest.md`.
 Sentiment model: [ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert).
 
 ## License
